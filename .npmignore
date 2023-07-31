@@ -6,3 +6,4 @@ package-lock.json
 test.js
 .idea
 .git
+__tests__

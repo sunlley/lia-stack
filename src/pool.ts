@@ -1,6 +1,6 @@
 import {Task} from "./task";
 
-export class Pool<T> {
+export class Pool{
      #tasks: Task[];
      #results: any[];
      #errors: any[];
@@ -34,6 +34,7 @@ export class Pool<T> {
                     }
                     for (let i = 0; i < this.#tasks.length; i++) {
                         const task = this.#tasks[i];
+                        if (!task){continue;}
                         task.index=i;
                         task.promise
                             .then((result) => {

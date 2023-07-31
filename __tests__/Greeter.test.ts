@@ -8,7 +8,8 @@ describe('Test Tasks', () => {
     })
     test('Test Tasks',async ()=>{
             const result = await new Stack<{ name: string }>(
-                (item,index, resolve, reject) => {
+                (item,index:number, resolve, reject) => {
+                    console.log('index',index)
                     // resolve(`${item}_123`)
                     if (item.name==='b'){
                         reject(item)
