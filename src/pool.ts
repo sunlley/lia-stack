@@ -16,15 +16,15 @@ export class Pool<T> {
     }
 
     check_result(resolve: (payload:any)=>void) {
-        let length = this.#tasks.length;
+        const length = this.#tasks.length;
         if (length === this.#resultsTemp.length + this.#errorsTemp.length) {
             resolve({results: this.#results, errors: this.#errors})
-        } else {
-
         }
     }
 
     async exec(): Promise<{ results: any[], errors: any[] }> {
+        this.#resultsTemp = []
+        this.#errorsTemp = [];
         return new Promise(
             resolve => {
                 if (this.#tasks != null && this.#tasks.length > 0) {
@@ -33,7 +33,7 @@ export class Pool<T> {
                         this.#errors.push(null);
                     }
                     for (let i = 0; i < this.#tasks.length; i++) {
-                        let task = this.#tasks[i];
+                        const task = this.#tasks[i];
                         task.index=i;
                         task.promise
                             .then((result) => {

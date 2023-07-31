@@ -50,7 +50,7 @@ export class Stack<T> {
     }
 
     async exec():Promise<StackResult> {
-        let result = await new Pool(this.events).exec();
+        const result = await new Pool(this.events).exec();
         this.events = [];
         this.#results = result.results;
         this.#errors = result.errors;

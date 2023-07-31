@@ -7,8 +7,8 @@ describe('Test Tasks', () => {
         items = [{name: 'a'}, {name: 'b'}];
     })
     test('Test Tasks',async ()=>{
-            let result = await new Stack<{ name: string }>(
-                (item, resolve, reject) => {
+            const result = await new Stack<{ name: string }>(
+                (item,index, resolve, reject) => {
                     // resolve(`${item}_123`)
                     if (item.name==='b'){
                         reject(item)
