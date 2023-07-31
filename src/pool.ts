@@ -34,6 +34,7 @@ export class Pool<T> {
                     }
                     for (let i = 0; i < this.#tasks.length; i++) {
                         let task = this.#tasks[i];
+                        task.index=i;
                         task.promise
                             .then((result) => {
                                 this.#results[i] = result;

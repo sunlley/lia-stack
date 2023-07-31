@@ -11,12 +11,14 @@ export class Stack<T> {
      #errors?: any[];
     private readonly callback: (
         item: T,
+        index:number,
         resolve: (value: any | PromiseLike<any>) => void,
         reject: (reason?: any) => void
     ) => void;
 
     constructor(callback: (
         item: T,
+        index:number,
         resolve: (value: any | PromiseLike<any>) => void,
         reject: (reason?: any) => void
     ) => void, items?: T[]) {
@@ -29,8 +31,8 @@ export class Stack<T> {
 
     task(item: T) {
         this.events.push(
-            new Task((resolve: any, reject: any) => {
-                this.callback(item, resolve, reject);
+            new Task((resolve: any, reject: any,index:number) => {
+                this.callback(item, index,resolve, reject);
             })
         )
         return this;
@@ -39,8 +41,8 @@ export class Stack<T> {
     tasks(items: T[]) {
         for (const item of items) {
             this.events.push(
-                new Task((resolve: any, reject: any) => {
-                    this.callback(item, resolve, reject);
+                new Task((resolve: any, reject: any,index) => {
+                    this.callback(item,index, resolve, reject);
                 })
             )
         }
