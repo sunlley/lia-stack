@@ -1,6 +1,10 @@
 import {Pool} from "./pool";
 import {Task} from "./task";
 
+export interface StackResult{
+    results:any[],
+    errors:any[]
+}
 export class Stack<T> {
     private events: any[];
      #results?: any[];
@@ -43,7 +47,7 @@ export class Stack<T> {
         return this;
     }
 
-    async exec() {
+    async exec():Promise<StackResult> {
         let result = await new Pool(this.events).exec();
         this.events = [];
         this.#results = result.results;
@@ -51,6 +55,7 @@ export class Stack<T> {
         return result;
     }
 
-    public get results(){return this.#results;}
-    public get errors(){return this.#errors;}
+    public get results():any[]|undefined{return this.#results;}
+
+    public get errors():any[]|undefined{return this.#errors;}
 }
