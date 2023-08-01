@@ -1,4 +1,5 @@
 import {Task} from "./task";
+import {StackError} from "./error";
 
 export class Pool{
      #tasks: Task[];
@@ -6,6 +7,7 @@ export class Pool{
      #errors: any[];
      #resultsTemp: any[];
      #errorsTemp: any[];
+     #timeout?: number;
 
     constructor(tasks: Task[]) {
         this.#tasks = tasks;
@@ -22,11 +24,12 @@ export class Pool{
         }
     }
 
-    async exec(): Promise<{ results: any[], errors: any[] }> {
+    async exec(timeout?:number): Promise<{ results: any[], errors: any[] }> {
+        this.#timeout = timeout;
         this.#resultsTemp = []
         this.#errorsTemp = [];
         return new Promise(
-            resolve => {
+            (resolve,reject) => {
                 if (this.#tasks != null && this.#tasks.length > 0) {
                     for (const task of this.#tasks) {
                         this.#results.push(null);
@@ -36,18 +39,42 @@ export class Pool{
                         const task = this.#tasks[i];
                         if (!task){continue;}
                         task.index=i;
+                        let timer:any;
+                        if (this.#timeout && this.#timeout>0){
+                            timer = setTimeout(()=>{
+                                const error = new StackError(`Time out ${this.#timeout}`);
+                                if (task.reject){
+                                    task.reject(error);
+                                }
+                                if (timer){
+                                    clearTimeout(timer);
+                                    timer=null;
+                                }
+                            },this.#timeout);
+                        }
                         task.promise
                             .then((result) => {
                                 this.#results[i] = result;
                                 this.#resultsTemp.push(result);
+                                if (timer){
+                                    clearTimeout(timer);
+                                    timer=null;
+                                }
                                 this.check_result(resolve);
                             })
                             .catch((error: any) => {
                                 this.#errors[i] = error;
                                 this.#errorsTemp.push(error);
+                                if (timer){
+                                    clearTimeout(timer);
+                                    timer=null;
+                                }
                                 this.check_result(resolve);
                             });
+
                     }
+                }else{
+                    reject(new StackError('No tasks to schedule'))
                 }
             }
         );

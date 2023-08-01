@@ -1,24 +1,25 @@
 import Stack from "../src";
 
-describe('Test Tasks', () => {
+describe('Test Stack', () => {
     let items:any;
     beforeEach(() => {
-        console.log('Test')
-        items = [{name: 'a'}, {name: 'b'}];
+        // items = [{name: 'a'}, {name: 'b'}];
+        items = [{name: 'b'}];
     })
     test('Test Tasks',async ()=>{
             const result = await new Stack<{ name: string }>(
-                (item,index:number, resolve, reject) => {
-                    console.log('index',index)
-                    // resolve(`${item}_123`)
+                (item, _index:number, resolve, reject) => {
+                    // console.log('index',index)
                     if (item.name==='b'){
-                        reject(item)
+                        setTimeout(()=>{
+                            reject(item)
+                        },1000)
                     }else{
                         resolve(item)
                     }
 
                 }
-            ).tasks(items).exec();
+            ).tasks(items).timeout(500).exec();
             console.log('result',result)
         expect('Hello Carl').toBe('Hello Carl');
     },5000);

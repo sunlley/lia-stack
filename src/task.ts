@@ -7,6 +7,8 @@ export class Task{
     ) => void;
     promise: Promise<any>;
     index:number=0;
+    resolve?: (value: any | PromiseLike<any>) => void;
+    reject?: (reason?: any) => void;
 
 
     constructor(action: (
@@ -18,6 +20,8 @@ export class Task{
             resolve: (value: any | PromiseLike<any>) => void,
             reject: (reason?: any) => void
         ) => {
+            this.resolve=resolve;
+            this.reject=reject;
             action(resolve, reject,this.index);
         }
         this.promise = new Promise(this.next);
