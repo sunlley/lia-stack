@@ -1,79 +1,80 @@
 import {Pool} from "./pool";
 import {Task} from "./task";
+import {Reject, Resolve, StackOption, StackResult} from "./types";
 
-export interface StackResult {
-    results: any[],
-    errors: any[]
-}
-export interface StackOption<T>{
-    items?:T[]
-    timeout?:number;
-}
-export class Stack<T> {
-    private events: any[];
-    #results?: any[];
-    #errors?: any[];
-    #timeout?: number;
-    private readonly callback: (
-        item: T,
-        index: number,
-        resolve: (value: any | PromiseLike<any>) => void,
-        reject: (reason?: any) => void
-    ) => void;
+
+export class Stack<T = any, R = T, E = any> {
+    private events: Task<R, E>[];
+    #results?: (R | null)[];
+    #errors?: (E | null)[];
+    private readonly callback: (item: T, index: number, resolve: Resolve<R>, reject: Reject<E>) => void;
 
     constructor(
-        callback: (
-            item: T,
-            index: number,
-            resolve: (value: any | PromiseLike<any>) => void,
-            reject: (reason?: any) => void) => void,
+        callback: (item: T, index: number, resolve: Resolve<R>, reject: Reject<E>) => void,
         option?: StackOption<T>) {
         this.events = [];
         this.callback = callback;
-        if (option){
+        if (option) {
             if (option.items) {
-                this.tasks(option.items);
-            }
-            if (option.timeout && option.timeout>0) {
-                this.timeout(option.timeout);
+                this.tasks(option.items, option.timeout ?? option.timeouts);
             }
         }
     }
 
-    task(item: T) {
-        this.events.push(
-            new Task((resolve: any, reject: any, index: number) => {
-                this.callback(item, index, resolve, reject);
-            })
-        )
-        return this;
-    }
-
-    tasks(items: T[]) {
-        for (const item of items) {
-            this.task(item);
+    task(item: T, timeout?: number) {
+        if (item) {
+            this.events.push(
+                new Task((resolve: any, reject: any, index: number) => {
+                    this.callback(item, index, resolve, reject);
+                }, this.events.length, timeout)
+            )
         }
         return this;
     }
 
-    timeout(time: number) {
-        this.#timeout = time;
+    tasks(items: T[], timeout?: number | number[]) {
+        let _timeouts: number[] | undefined;
+        if (timeout) {
+            _timeouts = [];
+            if (Array.isArray(timeout)) {
+                _timeouts = [...timeout];
+            } else if (timeout > 0) {
+                for (let i = 0; i < items.length; i++) {
+                    _timeouts.push(timeout);
+                }
+            }
+        }
+        if (_timeouts) {
+            if (_timeouts.length != items.length) {
+                throw new Error("timeout length must be equal to items length");
+            }
+        }
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item) {
+                let _timeout: number | undefined;
+                if (_timeouts != undefined) {
+                    _timeout = _timeouts[i];
+                }
+                this.task(item, _timeout);
+            }
+        }
         return this;
     }
 
-    async exec(): Promise<StackResult> {
-        const result = await new Pool(this.events).exec(this.#timeout);
+    async exec(): Promise<StackResult<R | null, E | null>> {
+        const result = await new Pool(this.events).exec();
         this.events = [];
         this.#results = result.results;
         this.#errors = result.errors;
         return result;
     }
 
-    public get results(): any[] | undefined {
+    public get results(): (R | null)[] | undefined {
         return this.#results;
     }
 
-    public get errors(): any[] | undefined {
+    public get errors(): (E | null)[] | undefined {
         return this.#errors;
     }
 }
