@@ -71,8 +71,6 @@ describe('Test type single', () => {
             }
         ).exec();
         results = doList.results.filter((item: any) => item !== null);
-        console.log('doList', 'time:', Date.now() - start)
-
     })
     test('result length', () => {
         expect(results.length).toEqual(1);

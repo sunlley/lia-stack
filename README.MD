@@ -19,7 +19,6 @@ const start = async () => {
             //reject(error)
         }
     ).tasks(items).timeout(1000).exec();
-    console.log('result',result)
 }
 start()
 
