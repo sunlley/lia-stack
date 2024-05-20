@@ -1,6 +1,6 @@
 {
   "name": "lia-stack",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "JavaScript/TypeScript library of Execute multiple asynchronous tasks and return synchronous results",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

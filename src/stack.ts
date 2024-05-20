@@ -7,6 +7,7 @@ export class Stack<T = any, R = T, E = any> {
     private events: Task<R, E>[];
     #results?: (R | null)[];
     #errors?: (E | null)[];
+    readonly option?: StackOption<T>;
     private readonly callback: (item: T, index: number, resolve: Resolve<R>, reject: Reject<E>) => void;
 
     constructor(
@@ -14,6 +15,7 @@ export class Stack<T = any, R = T, E = any> {
         option?: StackOption<T>) {
         this.events = [];
         this.callback = callback;
+        this.option = option;
         if (option) {
             if (option.items) {
                 this.tasks(option.items, option.timeout ?? option.timeouts);
@@ -23,10 +25,11 @@ export class Stack<T = any, R = T, E = any> {
 
     task(item: T, timeout?: number) {
         if (item) {
+            const type = this.option?this.option.type??'all':'all';
             this.events.push(
                 new Task((resolve: any, reject: any, index: number) => {
                     this.callback(item, index, resolve, reject);
-                }, this.events.length, timeout)
+                }, this.events.length, type,timeout)
             )
         }
         return this;

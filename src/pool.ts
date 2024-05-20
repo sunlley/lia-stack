@@ -4,8 +4,8 @@ import {Resolve} from "./types";
 
 export class Pool<R = any, E = any> {
     #tasks: Task<R, E>[];
-    #results: (R|null)[];
-    #errors: (E|null)[];
+    #results: (R | null)[];
+    #errors: (E | null)[];
     #resultsTemp: any[];
     #errorsTemp: any[];
     #timeout?: number;
@@ -16,7 +16,7 @@ export class Pool<R = any, E = any> {
         this.#errors = [];
         this.#resultsTemp = []
         this.#errorsTemp = [];
-        if (this.#tasks){
+        if (this.#tasks) {
             this.#tasks = this.#tasks.filter((task) => task != null);
             for (let i = 0; i < this.#tasks.length; i++) {
                 const task = tasks[i];
@@ -28,20 +28,26 @@ export class Pool<R = any, E = any> {
     }
 
     check_result(resolve: Resolve<{
-        results: (R|null)[],
-        errors: (E|null)[]
-    }>) {
+        results: (R | null)[],
+        errors: (E | null)[]
+    }>, isSingle: boolean) {
         const length = this.#tasks.length;
+        if (isSingle) {
+            if (this.#resultsTemp.length > 0) {
+                resolve({results: this.#results, errors: this.#errors})
+                return;
+            }
+        }
         if (length === this.#resultsTemp.length + this.#errorsTemp.length) {
             resolve({results: this.#results, errors: this.#errors})
         }
     }
 
-    async exec(): Promise<{ results: (R|null)[], errors: (E|null)[] }> {
-        return  new Promise<{ results: (R|null)[], errors: (E|null)[] }>((resolve, reject) => {
+    async exec(): Promise<{ results: (R | null)[], errors: (E | null)[] }> {
+        return new Promise<{ results: (R | null)[], errors: (E | null)[] }>((resolve, reject) => {
             this.#resultsTemp = []
             this.#errorsTemp = [];
-            if (this.#tasks == null || this.#tasks.length === 0){
+            if (this.#tasks == null || this.#tasks.length === 0) {
                 reject(new StackError('No tasks to schedule'));
             }
             for (const task of this.#tasks) {
@@ -66,7 +72,7 @@ export class Pool<R = any, E = any> {
                         }
                         this.#results[task.index] = result;
                         this.#resultsTemp.push(result);
-                        this.check_result(resolve);
+                        this.check_result(resolve, task.type === 'single');
                     })
                     .catch((error: any) => {
                         if (timer) {
@@ -75,7 +81,7 @@ export class Pool<R = any, E = any> {
                         }
                         this.#errors[task.index] = error;
                         this.#errorsTemp.push(error);
-                        this.check_result(resolve);
+                        this.check_result(resolve, task.type === 'single');
                     });
             }
 

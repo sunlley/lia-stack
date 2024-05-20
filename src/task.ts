@@ -6,6 +6,7 @@ export class Task<R,E> {
     promise: Promise<R>;
     index: number = 0;
     timeout?: number;
+    type: 'single'|'all';
     resolve?: Resolve<R>;
     reject?:  Reject<E>;
     next: (resolve:Resolve<R>, reject: Reject<E>) => void;
@@ -13,9 +14,11 @@ export class Task<R,E> {
     constructor(
         action: TaskAction<R,E>,
         index:number,
+        type: 'single'|'all',
         timeout?: number
         ) {
         this.index = index;
+        this.type=type;
         this.timeout = timeout;
         this.next = (resolve:Resolve<R>, reject: Reject<E>) => {
             this.resolve = resolve;

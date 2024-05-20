@@ -3,6 +3,7 @@ export interface StackResult<R=any,E=any> {
     errors: E[]
 }
 export interface StackOption<T>{
+    type?:'single'|'all'
     items?:T[]
     timeout?:number;
     timeouts?:number[];
